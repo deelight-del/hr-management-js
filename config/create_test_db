@@ -1,0 +1,4 @@
+
+#!/usr/bin/bash
+sudo -u postgres createuser \-\-login \-\-pwprompt testuser;
+sudo -u postgres createdb \-\-owner=testuser hr_management_test;
