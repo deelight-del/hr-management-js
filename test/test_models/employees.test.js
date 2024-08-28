@@ -34,3 +34,22 @@ test('Check if database creates new employees', async () => {
   expect(jane.department).toBe('Sales & Logistics');
   expect(jane.nonExistent).toBeUndefined();
 });
+
+describe('test only for null values', () => {
+  test('test for null name', async () => {
+    await Employee.sync();
+    try {
+      await Employee.create({
+        // name: 'jane',
+        address: '123 avenue',
+        email: 'janedoe@mail.com',
+        phone: '+23499999909',
+        position: 'General Manager',
+        department: 'Sales & Logistics',
+      });
+    } catch (error) {
+      // expect(error).toMatch('Address cannot be empty');
+      expect(error).toMatch('Name cannot be null');
+    }
+  })
+})

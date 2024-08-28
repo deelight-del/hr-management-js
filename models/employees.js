@@ -9,43 +9,85 @@ const Employee = sequelize.define('Employee', {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
-    allowNull: false,
+    allowNull: {
+      args: false,
+      msg: 'id cannot be null'
+      },
     primaryKey: true
   },
   name: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: {
+      args: false,
+      msg: 'Name cannot be null'
+    },
+    notEmpty: {
+      msg: 'Name cannot be empty'
+    },
     validate: {
-      is: /^[a-zA-Z]+\s[a-zA-Z]*$/i,
+      is: {
+        args: /^[a-zA-Z]+\s?[a-zA-Z]*$/i,
+        msg: 'Regex pattern does not match'
+      }
     }
   },
   address: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: {
+      args: false,
+      msg: 'Address cannot be null'
+    },
+    notEmpty: {
+      msg: 'Address cannot be empty'
+    },
   },
   email: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: {
+      args: false,
+      msg: 'Email cannot be null'
+      },
+    notEmpty: {
+      msg: 'Email cannot be empty'
+    },
     validate: {
       isEmail: {
-        message: 'Invalid Email Address'
-      }
-    }
-  },
+        msg: 'Invalid Email Address'
+  }
+}
+},
   phone: {
     type: DataTypes.STRING(32),
-    allowNull: false
+    allowNull: {
+      args: false,
+      msg: 'Phone number cannot be null'
+    },
+    notEmpty: {
+      msg: 'Phone number cannot be empty'
+    }
     // TODO: il8n/l18n?
   },
   position: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: {
+      args: false,
+      msg: 'Position cannot be null'
+    },
+    notEmpty: {
+      msg: 'Position cannot be empty'
+    }
     // TODO: Handle constraint of positions available in logic
     // side of things.
   },
   department: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: {
+      args: false,
+      msg: 'Department cannot be null'
+    },
+    notEmpty: {
+      msg: 'Department cannot be empty'
+    }
     // TODO: Handle constraint of departments available in logic
     // side of things.
   }
@@ -67,4 +109,4 @@ const Employee = sequelize.define('Employee', {
 
 
 //FIX: Fix isAlpha constraint on the name field.
-module.exports = { Employee };
+module.exports = { Employee, DataTypes };
