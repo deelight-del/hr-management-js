@@ -28,6 +28,7 @@ const Employee = sequelize.define('Employee', {
       is: {
         args: /^[a-zA-Z]+\s?[a-zA-Z]*$/i,
         msg: 'Regex pattern does not match'
+        // TODO: Regex pattern should have special chars name, like German, Yoruba special chars, etc.
       }
     }
   },
