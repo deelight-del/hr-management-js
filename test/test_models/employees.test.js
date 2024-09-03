@@ -7,17 +7,29 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
+// Import the Employee models database.
 const { Employee, DataTypes } = require('../../models/employees');
+
+// Import validation Error from Sequelize.
+const { ValidationError } = require('sequelize');
+
+// Import libraries for creating mockdata for simulating test variables.
+// mocker data generator uses faker and chance to create a schema for easy
+// mock data generation.
 const { mocker } = require('mocker-data-generator');
 const { faker } = require('@faker-js/faker');
 const Chance = require('chance');
 
+// create instance of chance -- as shown in the doc.
 const chance = new Chance();
 
+// drop the Employee db before each test.
 beforeEach( async() => {
   await Employee.drop();
 })
 
+
+// Manual testing if emplyees are created with expected variables.
 test('Check if database creates new employees', async () => {
   // Create a new Employee.
   await Employee.sync({force: true});
@@ -40,11 +52,179 @@ test('Check if database creates new employees', async () => {
   expect(jane.nonExistent).toBeUndefined();
 });
 
+
+// Grouping test fixtures into a dsecrible block.
+// --> this block contains test only for non-nullable fields.
 describe('test only for null values', () => {
 
   var emp1;
   var emp2;
 
+  // useing the mocker data generator, create an array of objects that contain
+  // some objects with mocked data.
+  beforeEach(() => {
+    // Create employees schema that is used by mocker-data-generator.
+    const employees = {
+      // name is a function that returns `firstname lastname`
+      name: {
+        function: function () {
+          return (
+            `${faker.person.firstName()} ${faker.person.lastName()}`
+          );
+        },
+      },
+      // employees uses chance (imported lib. above) to access its address() method.
+      // synonymous to chance.address();
+      address: {
+        chance: 'address()',
+      },
+      // email uses faker(above) to generate emails.
+      email: {
+        faker: 'internet.email()',
+      },
+      phone: {
+        faker: 'phone.number()'
+      },
+      // In postion, values tell the schema to randomly choose one of the
+      // values from the array; same for department.
+      position: {
+        values: ['novice', 'star1', 'Asst. General Manager', 'General Manager', 'Director', 'N/A'],
+      },
+      department: {
+        values: ['Sales & Logistics', 'QC Lab', 'Raw Materials', 'Security', 'N/A'],
+      }
+    }
+
+    // generates an object where the schema is used to generate an array
+    // of information;
+    // addGenerator methods tell mocker which generators were effectively used
+    // in the schema.
+    
+    const data = mocker()
+      .addGenerator('faker', faker) // Naming is important i.e. `faker`.
+      .addGenerator('chance', chance)
+      .schema('employees', employees, 2)
+      .buildSync(); // generate the data synchronously
+    emp1 = data.employees[0]
+    emp2 = data.employees[1]
+    console.log(`employe 1 is ${emp1.name}`);
+    console.log(`employe 2 is ${emp2.address}`);
+  });
+
+  test('test for null name', async () => {
+    console.log(`employe 1 is ${emp1}`);
+    console.log(`employe 2 is ${emp2}`);
+    await Employee.sync();
+    try {
+      await Employee.create({
+        // name: 'jane',
+        address: emp1.address,
+        email: emp1.email,
+        phone: emp1.phone,
+        position: emp1.position,
+        department: emp1.department,
+      });
+    } catch (error) {
+      expect(error.message).toMatch('Name cannot be null');
+    }
+  })
+
+  test('test for null address', async () => {
+    console.log(`employe 1 is ${emp1}`);
+    console.log(`employe 2 is ${emp2}`);
+    await Employee.sync();
+    try {
+      await Employee.create({
+        name: emp1.name,
+        // address: emp1.address,
+        email: emp1.email,
+        phone: emp1.phone,
+        position: emp1.position,
+        department: emp1.department,
+      });
+    } catch (error) {
+      expect(error.message).toMatch('Address cannot be null');
+    }
+  })
+  
+  test('test for null email', async () => {
+    console.log(`employe 1 is ${emp1}`);
+    console.log(`employe 2 is ${emp2}`);
+    await Employee.sync();
+    try {
+      await Employee.create({
+        name: emp1.name,
+        address: emp1.address,
+        // email: emp1.email,
+        phone: emp1.phone,
+        position: emp1.position,
+        department: emp1.department,
+      });
+    } catch (error) {
+      expect(error.message).toMatch('Email cannot be null');
+    }
+  })
+  
+  test('test for null phone', async () => {
+    console.log(`employe 1 is ${emp1}`);
+    console.log(`employe 2 is ${emp2}`);
+    await Employee.sync();
+    try {
+      await Employee.create({
+        name: emp1.name,
+        address: emp1.address,
+        email: emp1.email,
+        // phone: emp1.phone,
+        position: emp1.position,
+        department: emp1.department,
+      });
+    } catch (error) {
+      expect(error.message).toMatch('Phone number cannot be null');
+    }
+  })
+  
+  test('test for null position', async () => {
+    console.log(`employe 1 is ${emp1}`);
+    console.log(`employe 2 is ${emp2}`);
+    await Employee.sync();
+    try {
+      await Employee.create({
+        name: emp1.name,
+        address: emp1.address,
+        email: emp1.email,
+        phone: emp1.phone,
+        // position: emp1.position,
+        department: emp1.department,
+      });
+    } catch (error) {
+      expect(error.message).toMatch('Positon cannot be null');
+    }
+  })
+  
+  test('test for null department', async () => {
+    await Employee.sync();
+    try {
+      await Employee.create({
+        name: emp1.name,
+        address: emp1.address,
+        email: emp1.email,
+        phone: emp1.phone,
+        position: emp1.position,
+        // department: emp1.department,
+      });
+    } catch (error) {
+      expect(error.message).toMatch('Positon cannot be null');
+    }
+  })
+})
+
+
+describe('test only for empty values', () => {
+
+  var emp1;
+  var emp2;
+
+  // Same generator format as above.
   beforeEach(() => {
     const employees = {
       name: {
@@ -77,17 +257,15 @@ describe('test only for null values', () => {
       .buildSync();
     emp1 = data.employees[0]
     emp2 = data.employees[1]
-    console.log(`employe 1 is ${emp1.name}`);
-    console.log(`employe 2 is ${emp2.address}`);
+    // console.log(`employe 1 is ${emp1.name}`);
+    // console.log(`employe 2 is ${emp2.address}`);
   });
 
-  test('test for null name', async () => {
-    console.log(`employe 1 is ${emp1}`);
-    console.log(`employe 2 is ${emp2}`);
+  test('test for empty name', async () => {
     await Employee.sync();
     try {
       await Employee.create({
-        // name: 'jane',
+        name: '',
         address: emp1.address,
         email: emp1.email,
         phone: emp1.phone,
@@ -95,63 +273,55 @@ describe('test only for null values', () => {
         department: emp1.department,
       });
     } catch (error) {
-      expect(error).toMatch('Name cannot be null');
+      expect(error.message).toMatch('Regex pattern does not match, expecting `firstName secondName`');
     }
   })
-  test('test for null address', async () => {
-    console.log(`employe 1 is ${emp1}`);
-    console.log(`employe 2 is ${emp2}`);
+  test('test for empty address', async () => {
     await Employee.sync();
     try {
       await Employee.create({
         name: emp1.name,
-        // address: emp1.address,
+        address: '',
         email: emp1.email,
         phone: emp1.phone,
         position: emp1.position,
         department: emp1.department,
       });
     } catch (error) {
-      expect(error).toMatch('Address cannot be null');
+      expect(error.message).toMatch('Address cannot be empty');
     }
   })
-  test('test for null email', async () => {
-    console.log(`employe 1 is ${emp1}`);
-    console.log(`employe 2 is ${emp2}`);
+  test('test for empty email', async () => {
     await Employee.sync();
     try {
       await Employee.create({
         name: emp1.name,
         address: emp1.address,
-        // email: emp1.email,
+        email: '',
         phone: emp1.phone,
         position: emp1.position,
         department: emp1.department,
       });
     } catch (error) {
-      expect(error).toMatch('Email cannot be null');
+      expect(error.message).toMatch('Invalid Email Address/Empty');
     }
   })
-  test('test for null phone', async () => {
-    console.log(`employe 1 is ${emp1}`);
-    console.log(`employe 2 is ${emp2}`);
+  test('test for empty phone', async () => {
     await Employee.sync();
     try {
       await Employee.create({
         name: emp1.name,
         address: emp1.address,
         email: emp1.email,
-        // phone: emp1.phone,
+        phone: '',
         position: emp1.position,
         department: emp1.department,
       });
     } catch (error) {
-      expect(error).toMatch('Phone number cannot be null');
+      expect(error.message).toMatch('Phone number cannot be empty');
     }
   })
-  test('test for null position', async () => {
-    console.log(`employe 1 is ${emp1}`);
-    console.log(`employe 2 is ${emp2}`);
+  test('test for empty position', async () => {
     await Employee.sync();
     try {
       await Employee.create({
@@ -159,14 +329,14 @@ describe('test only for null values', () => {
         address: emp1.address,
         email: emp1.email,
         phone: emp1.phone,
-        // position: emp1.position,
+        position: '',
         department: emp1.department,
       });
     } catch (error) {
-      expect(error).toMatch('Positon cannot be null');
+      expect(error.message).toMatch('Positon cannot be empty');
     }
   })
-  test('test for null department', async () => {
+  test('test for empty department', async () => {
     await Employee.sync();
     try {
       await Employee.create({
@@ -175,10 +345,10 @@ describe('test only for null values', () => {
         email: emp1.email,
         phone: emp1.phone,
         position: emp1.position,
-        // department: emp1.department,
+        department: '',
       });
     } catch (error) {
-      expect(error).toMatch('Positon cannot be null');
+      expect(error.message).toMatch('Positon cannot be empty');
     }
   })
 })

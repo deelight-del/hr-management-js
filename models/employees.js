@@ -21,13 +21,10 @@ const Employee = sequelize.define('Employee', {
       args: false,
       msg: 'Name cannot be null'
     },
-    notEmpty: {
-      msg: 'Name cannot be empty'
-    },
     validate: {
       is: {
-        args: /^[a-zA-Z]+\s?[a-zA-Z]*$/i,
-        msg: 'Regex pattern does not match'
+        args: /^[a-zA-Z'-]+\s?[a-zA-Z'-]*$/i,
+        msg: 'Regex pattern does not match, expecting `firstName secondName`'
         // TODO: Regex pattern should have special chars name, like German, Yoruba special chars, etc.
       }
     }
@@ -48,12 +45,9 @@ const Employee = sequelize.define('Employee', {
       args: false,
       msg: 'Email cannot be null'
       },
-    notEmpty: {
-      msg: 'Email cannot be empty'
-    },
     validate: {
       isEmail: {
-        msg: 'Invalid Email Address'
+        msg: 'Invalid Email Address/Empty'
   }
 }
 },
@@ -88,7 +82,7 @@ const Employee = sequelize.define('Employee', {
     },
     notEmpty: {
       msg: 'Department cannot be empty'
-    }
+    },
     // TODO: Handle constraint of departments available in logic
     // side of things.
   }

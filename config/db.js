@@ -17,7 +17,8 @@ const DB_PASSWORD = process.env.DB_PASSWORD;
 
 const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
   host: 'localhost',
-  dialect: 'postgres'
+  dialect: 'postgres',
+  logging: false, // Off outputting sql queries on screen.
 });
 
 console.log('The name of the DB is', DB_NAME);
