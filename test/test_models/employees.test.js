@@ -24,9 +24,49 @@ const Chance = require('chance');
 const chance = new Chance();
 
 // drop the Employee db before each test.
-beforeEach( async() => {
+
+//beforeEach( async() => {
+//  await Employee.drop();
+//})
+
+let emp1;
+let emp2;
+
+// Same generator format as above.
+beforeEach(async() => {
   await Employee.drop();
-})
+  const employees = {
+    name: {
+      function: function () {
+        return (
+          `${faker.person.firstName()} ${faker.person.lastName()}`
+        );
+      },
+    },
+    address: {
+      chance: 'address()',
+    },
+    email: {
+      faker: 'internet.email()',
+    },
+    phone: {
+      faker: 'phone.number()'
+    },
+    position: {
+      values: ['novice', 'star1', 'Asst. General Manager', 'General Manager', 'Director', 'N/A'],
+    },
+    department: {
+      values: ['Sales & Logistics', 'QC Lab', 'Raw Materials', 'Security', 'N/A'],
+    }
+  }
+  const data = mocker()
+  .addGenerator('faker', faker)
+  .addGenerator('chance', chance)
+  .schema('employees', employees, 2)
+  .buildSync();
+  emp1 = data.employees[0]
+  emp2 = data.employees[1]
+});
 
 
 // Manual testing if emplyees are created with expected variables.
@@ -351,4 +391,110 @@ describe('test only for empty values', () => {
       expect(error.message).toMatch('Positon cannot be empty');
     }
   })
+
+  describe('test that no two IDs are the same', () => {
+
+    var emp1;
+    var emp2;
+
+    // Same generator format as above.
+    beforeEach(() => {
+      const employees = {
+        name: {
+          function: function () {
+            return (
+              `${faker.person.firstName()} ${faker.person.lastName()}`
+            );
+          },
+        },
+        address: {
+          chance: 'address()',
+        },
+        email: {
+          faker: 'internet.email()',
+        },
+        phone: {
+          faker: 'phone.number()'
+        },
+        position: {
+          values: ['novice', 'star1', 'Asst. General Manager', 'General Manager', 'Director', 'N/A'],
+        },
+        department: {
+          values: ['Sales & Logistics', 'QC Lab', 'Raw Materials', 'Security', 'N/A'],
+        }
+      }
+      const data = mocker()
+      .addGenerator('faker', faker)
+      .addGenerator('chance', chance)
+      .schema('employees', employees, 2)
+      .buildSync();
+      emp1 = data.employees[0]
+      emp2 = data.employees[1]
+      // console.log(`employe 1 is ${emp1.name}`);
+      // console.log(`employe 2 is ${emp2.address}`);
+    });
+
+    test('test for duplicate entry, but different auto generated IDs', async () => {
+      await Employee.sync();
+      try {
+        await Employee.create({
+          name: emp1.name,
+          address: emp1.address,
+          email: emp1.email,
+          phone: emp1.phone,
+          position: emp1.position,
+          department: emp1.department,
+        });
+        await Employee.create({
+          name: emp1.name,
+          address: emp1.address,
+          email: emp1.email,
+          phone: emp1.phone,
+          position: emp1.position,
+          department: emp1.department,
+        });
+        await Employee.sync();
+        const result = await Employee.findAndCountAll({
+          where: {
+            name: emp1.name,
+          }
+        })
+        expect(result.count).toBe(2);
+        expect(String(result.rows[0].id)).not.toEqual(String(result.rows[1].id));
+      } catch (error) {
+        // console.log(`eroor here ${error}`);
+        expect(error).toBeUndefined;
+      }
+    });
+  })
+
+  describe('Behaiour of table when it is updated.', () => {
+
+    test('test for name field when it is updated.', async () => {
+      await Employee.sync();
+      await Employee.create({
+        name: emp1.name,
+        address: emp1.address,
+        email: emp1.email,
+        phone: emp1.phone,
+        position: emp1.position,
+        department: emp1.department,
+      });
+      await Employee.sync(); // Sync from DB.
+      let testEmp = await Employee.findOne( {where: { name: emp1.name } } ); // find the row with emp1.name.
+      expect(testEmp.name).not.toBe(emp2.name);  //Test that emp1.name is not equal to emp2.name before update.
+
+      // Update emp1.name to emp2.name.
+      await Employee.update( {name: emp2.name },
+        {
+          where: { name: emp1.name }
+        }
+      )
+      await Employee.sync(); // Sync from db.
+      // Use the id obtained from DB query to access the same row.
+      testEmp = await Employee.findOne( {where: { id: testEmp.id } } );
+      expect(testEmp.name).toEqual(emp2.name); // expect name to be updated to emp2.name.
+    });
+  })
+
 })
