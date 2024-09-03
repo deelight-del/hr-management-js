@@ -32,10 +32,16 @@ const chance = new Chance();
 let emp1;
 let emp2;
 
-// Same generator format as above.
+// using the mocker data generator, create an array of objects that contain
+// some objects with mocked data.
 beforeEach(async() => {
+
+  // Drop table for each new test run.
   await Employee.drop();
+
+  // Create employees schema that is used by mocker-data-generator.
   const employees = {
+    // name is a function that returns `firstname lastname`
     name: {
       function: function () {
         return (
@@ -43,15 +49,20 @@ beforeEach(async() => {
         );
       },
     },
+    // employees uses chance (imported lib. above) to access its address() method.
+    // synonymous to chance.address();
     address: {
       chance: 'address()',
     },
+    // email uses faker(above) to generate emails.
     email: {
       faker: 'internet.email()',
     },
     phone: {
       faker: 'phone.number()'
     },
+    // In postion, values tell the schema to randomly choose one of the
+    // values from the array; same for department.
     position: {
       values: ['novice', 'star1', 'Asst. General Manager', 'General Manager', 'Director', 'N/A'],
     },
@@ -59,14 +70,21 @@ beforeEach(async() => {
       values: ['Sales & Logistics', 'QC Lab', 'Raw Materials', 'Security', 'N/A'],
     }
   }
+
+  // generates an object where the schema is used to generate an array
+  // of information;
+  // addGenerator methods tell mocker which generators were effectively used
+  // in the schema. Generators are libs like faker that allow us to generate some fake objects.
   const data = mocker()
-  .addGenerator('faker', faker)
+  .addGenerator('faker', faker) // Naming is important i.e. `faker`.
   .addGenerator('chance', chance)
   .schema('employees', employees, 2)
-  .buildSync();
+  .buildSync(); // generate the data synchronously
   emp1 = data.employees[0]
   emp2 = data.employees[1]
-});
+  console.log(`employe 1 is ${emp1.name}`);
+  console.log(`employe 2 is ${emp2.address}`);
+ });
 
 
 // Manual testing if emplyees are created with expected variables.
@@ -96,60 +114,6 @@ test('Check if database creates new employees', async () => {
 // Grouping test fixtures into a dsecrible block.
 // --> this block contains test only for non-nullable fields.
 describe('test only for null values', () => {
-
-  var emp1;
-  var emp2;
-
-  // useing the mocker data generator, create an array of objects that contain
-  // some objects with mocked data.
-  beforeEach(() => {
-    // Create employees schema that is used by mocker-data-generator.
-    const employees = {
-      // name is a function that returns `firstname lastname`
-      name: {
-        function: function () {
-          return (
-            `${faker.person.firstName()} ${faker.person.lastName()}`
-          );
-        },
-      },
-      // employees uses chance (imported lib. above) to access its address() method.
-      // synonymous to chance.address();
-      address: {
-        chance: 'address()',
-      },
-      // email uses faker(above) to generate emails.
-      email: {
-        faker: 'internet.email()',
-      },
-      phone: {
-        faker: 'phone.number()'
-      },
-      // In postion, values tell the schema to randomly choose one of the
-      // values from the array; same for department.
-      position: {
-        values: ['novice', 'star1', 'Asst. General Manager', 'General Manager', 'Director', 'N/A'],
-      },
-      department: {
-        values: ['Sales & Logistics', 'QC Lab', 'Raw Materials', 'Security', 'N/A'],
-      }
-    }
-
-    // generates an object where the schema is used to generate an array
-    // of information;
-    // addGenerator methods tell mocker which generators were effectively used
-    // in the schema.
-    
-    const data = mocker()
-      .addGenerator('faker', faker) // Naming is important i.e. `faker`.
-      .addGenerator('chance', chance)
-      .schema('employees', employees, 2)
-      .buildSync(); // generate the data synchronously
-    emp1 = data.employees[0]
-    emp2 = data.employees[1]
-    console.log(`employe 1 is ${emp1.name}`);
-    console.log(`employe 2 is ${emp2.address}`);
-  });
 
   test('test for null name', async () => {
     console.log(`employe 1 is ${emp1}`);
@@ -261,46 +225,6 @@ describe('test only for null values', () => {
 
 describe('test only for empty values', () => {
 
-  var emp1;
-  var emp2;
-
-  // Same generator format as above.
-  beforeEach(() => {
-    const employees = {
-      name: {
-        function: function () {
-          return (
-            `${faker.person.firstName()} ${faker.person.lastName()}`
-          );
-        },
-      },
-      address: {
-        chance: 'address()',
-      },
-      email: {
-        faker: 'internet.email()',
-      },
-      phone: {
-        faker: 'phone.number()'
-      },
-      position: {
-        values: ['novice', 'star1', 'Asst. General Manager', 'General Manager', 'Director', 'N/A'],
-      },
-      department: {
-        values: ['Sales & Logistics', 'QC Lab', 'Raw Materials', 'Security', 'N/A'],
-      }
-    }
-    const data = mocker()
-      .addGenerator('faker', faker)
-      .addGenerator('chance', chance)
-      .schema('employees', employees, 2)
-      .buildSync();
-    emp1 = data.employees[0]
-    emp2 = data.employees[1]
-    // console.log(`employe 1 is ${emp1.name}`);
-    // console.log(`employe 2 is ${emp2.address}`);
-  });
-
   test('test for empty name', async () => {
     await Employee.sync();
     try {
@@ -394,46 +318,6 @@ describe('test only for empty values', () => {
 
   describe('test that no two IDs are the same', () => {
 
-    var emp1;
-    var emp2;
-
-    // Same generator format as above.
-    beforeEach(() => {
-      const employees = {
-        name: {
-          function: function () {
-            return (
-              `${faker.person.firstName()} ${faker.person.lastName()}`
-            );
-          },
-        },
-        address: {
-          chance: 'address()',
-        },
-        email: {
-          faker: 'internet.email()',
-        },
-        phone: {
-          faker: 'phone.number()'
-        },
-        position: {
-          values: ['novice', 'star1', 'Asst. General Manager', 'General Manager', 'Director', 'N/A'],
-        },
-        department: {
-          values: ['Sales & Logistics', 'QC Lab', 'Raw Materials', 'Security', 'N/A'],
-        }
-      }
-      const data = mocker()
-      .addGenerator('faker', faker)
-      .addGenerator('chance', chance)
-      .schema('employees', employees, 2)
-      .buildSync();
-      emp1 = data.employees[0]
-      emp2 = data.employees[1]
-      // console.log(`employe 1 is ${emp1.name}`);
-      // console.log(`employe 2 is ${emp2.address}`);
-    });
-
     test('test for duplicate entry, but different auto generated IDs', async () => {
       await Employee.sync();
       try {
@@ -496,5 +380,4 @@ describe('test only for empty values', () => {
       expect(testEmp.name).toEqual(emp2.name); // expect name to be updated to emp2.name.
     });
   })
-
 })
