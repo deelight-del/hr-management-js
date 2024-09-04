@@ -19,14 +19,14 @@ const Employee = sequelize.define('Employee', {
     type: DataTypes.STRING,
     allowNull: {
       args: false,
-      msg: 'Name cannot be null'
+      msg: 'Name cannot be null',
     },
     validate: {
       is: {
         args: /^[a-zA-Z'-]+\s?[a-zA-Z'-]*$/i,
         msg: 'Regex pattern does not match, expecting `firstName secondName`'
         // TODO: Regex pattern should have special chars name, like German, Yoruba special chars, etc.
-      }
+      },
     }
   },
   address: {
@@ -49,6 +49,7 @@ const Employee = sequelize.define('Employee', {
       isEmail: {
         msg: 'Invalid Email Address/Empty'
   }
+  // TODO: Implement and ensure unique email at business logic.
 }
 },
   phone: {
@@ -88,20 +89,17 @@ const Employee = sequelize.define('Employee', {
   }
 });
 
-/**(async () => {
-  await sequelize.sync({ force: true });
-  const jane = await Employee.create({
-    name: 'jane',
-    address: '123 doe street',
-    email: 'jane@gmail.com',
-    phone: '+124 567 890',
-    position: 'head of operations',
-    department: 'chemistry and sci.'
-  })
-  console.log(`${jane.toJSON().name} lives in ${jane.address}`);
+(async () => {
+  await sequelize.sync();
+  //const jane = await Employee.create({
+  //  name: 'jane',
+  //  address: '123 doe street',
+  // email: 'jane@gmail.com',
+  //  phone: '+124 567 890',
+  //  position: 'head of operations',
+  //  department: 'chemistry and sci.'
+  //})
+  // console.log(`${jane.toJSON().name} lives in ${jane.address}`);
 })();
-*/
 
-
-//FIX: Fix isAlpha constraint on the name field.
 module.exports = { Employee, DataTypes };
