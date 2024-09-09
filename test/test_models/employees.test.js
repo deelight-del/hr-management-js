@@ -8,10 +8,10 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 // Import the Employee models database.
-const { Employee, DataTypes } = require('../../models/employees');
+const { Employee } = require('../../models/employees');
 
 // Import validation Error from Sequelize.
-const { ValidationError } = require('sequelize');
+// const { ValidationError } = require('sequelize');
 
 // Import libraries for creating mockdata for simulating test variables.
 // mocker data generator uses faker and chance to create a schema for easy
@@ -31,8 +31,7 @@ let emp2;
 beforeEach(async() => {
 
   // Drop table for each new test run.
-  await Employee.drop();
-  await Employee.sync();
+  // await Employee.truncate(); 
 
   // Create employees schema that is used by mocker-data-generator.
   const employees = {
@@ -79,11 +78,14 @@ beforeEach(async() => {
   emp2 = data.employees[1]
  });
 
+afterEach(async() => {
+  //await Employee.drop();
+  await Employee.truncate(); 
+});
 
 // Manual testing if emplyees are created with expected variables.
 test('Check if database creates new employees', async () => {
   // Create a new Employee.
-  await Employee.sync({force: true});
   const jane = await Employee.create({
     name: 'jane doe',
     address: 'stadium junction',
@@ -109,10 +111,9 @@ test('Check if database creates new employees', async () => {
 describe('test only for null values', () => {
 
   test('test for null name', async () => {
-    await Employee.sync();
     try {
       await Employee.create({
-        // name: 'jane',
+        name: null,
         address: emp1.address,
         email: emp1.email,
         phone: emp1.phone,
@@ -120,28 +121,26 @@ describe('test only for null values', () => {
         department: emp1.department,
       });
     } catch (error) {
-      expect(error.message).toMatch('Name cannot be null');
+      expect(error.message).toMatch("notNull Violation: Employee.name cannot be null");
     }
   })
 
   test('test for null address', async () => {
-    await Employee.sync();
     try {
       await Employee.create({
         name: emp1.name,
-        // address: emp1.address,
+        address: null,
         email: emp1.email,
         phone: emp1.phone,
         position: emp1.position,
         department: emp1.department,
       });
     } catch (error) {
-      expect(error.message).toMatch('Address cannot be null');
+      expect(error.message).toMatch("notNull Violation: Employee.address cannot be null");
     }
   })
   
   test('test for null email', async () => {
-    await Employee.sync();
     try {
       await Employee.create({
         name: emp1.name,
@@ -152,12 +151,11 @@ describe('test only for null values', () => {
         department: emp1.department,
       });
     } catch (error) {
-      expect(error.message).toMatch('Email cannot be null');
+      expect(error.message).toMatch("notNull Violation: Employee.email cannot be null");
     }
   })
   
   test('test for null phone', async () => {
-    await Employee.sync();
     try {
       await Employee.create({
         name: emp1.name,
@@ -168,12 +166,11 @@ describe('test only for null values', () => {
         department: emp1.department,
       });
     } catch (error) {
-      expect(error.message).toMatch('Phone number cannot be null');
+      expect(error.message).toMatch("notNull Violation: Employee.phone cannot be null");
     }
   })
   
   test('test for null position', async () => {
-    await Employee.sync();
     try {
       await Employee.create({
         name: emp1.name,
@@ -184,12 +181,11 @@ describe('test only for null values', () => {
         department: emp1.department,
       });
     } catch (error) {
-      expect(error.message).toMatch('Positon cannot be null');
+      expect(error.message).toMatch("notNull Violation: Employee.position cannot be null");
     }
   })
   
   test('test for null department', async () => {
-    await Employee.sync();
     try {
       await Employee.create({
         name: emp1.name,
@@ -200,7 +196,7 @@ describe('test only for null values', () => {
         // department: emp1.department,
       });
     } catch (error) {
-      expect(error.message).toMatch('Positon cannot be null');
+      expect(error.message).toMatch("notNull Violation: Employee.department cannot be null");
     }
   })
 })
@@ -209,7 +205,6 @@ describe('test only for null values', () => {
 describe('test only for empty values', () => {
 
   test('test for empty name', async () => {
-    await Employee.sync();
     try {
       await Employee.create({
         name: '',
@@ -224,7 +219,6 @@ describe('test only for empty values', () => {
     }
   })
   test('test for empty address', async () => {
-    await Employee.sync();
     try {
       await Employee.create({
         name: emp1.name,
@@ -239,7 +233,6 @@ describe('test only for empty values', () => {
     }
   })
   test('test for empty email', async () => {
-    await Employee.sync();
     try {
       await Employee.create({
         name: emp1.name,
@@ -254,7 +247,6 @@ describe('test only for empty values', () => {
     }
   })
   test('test for empty phone', async () => {
-    await Employee.sync();
     try {
       await Employee.create({
         name: emp1.name,
@@ -269,7 +261,6 @@ describe('test only for empty values', () => {
     }
   })
   test('test for empty position', async () => {
-    await Employee.sync();
     try {
       await Employee.create({
         name: emp1.name,
@@ -284,7 +275,6 @@ describe('test only for empty values', () => {
     }
   })
   test('test for empty department', async () => {
-    await Employee.sync();
     try {
       await Employee.create({
         name: emp1.name,
@@ -298,47 +288,12 @@ describe('test only for empty values', () => {
       expect(error.message).toMatch('Positon cannot be empty');
     }
   })
+})
 
-  describe('test that no two IDs are the same', () => {
+describe('test that no two IDs are the same', () => {
 
-    test('test for duplicate entry, but different auto generated IDs', async () => {
-      await Employee.sync();
-      try {
-        await Employee.create({
-          name: emp1.name,
-          address: emp1.address,
-          email: emp1.email,
-          phone: emp1.phone,
-          position: emp1.position,
-          department: emp1.department,
-        });
-        await Employee.create({
-          name: emp1.name,
-          address: emp1.address,
-          email: emp1.email,
-          phone: emp1.phone,
-          position: emp1.position,
-          department: emp1.department,
-        });
-        await Employee.sync();
-        const result = await Employee.findAndCountAll({
-          where: {
-            name: emp1.name,
-          }
-        })
-        expect(result.count).toBe(2);
-        expect(String(result.rows[0].id)).not.toEqual(String(result.rows[1].id));
-      } catch (error) {
-        // console.log(`eroor here ${error}`);
-        expect(error).toBeUndefined;
-      }
-    });
-  })
-
-  describe('Behaiour of table when it is updated.', () => {
-
-    test('test for name field when it is updated.', async () => {
-      await Employee.sync();
+  test('test for duplicate entry, but different auto generated IDs', async () => {
+    try {
       await Employee.create({
         name: emp1.name,
         address: emp1.address,
@@ -347,88 +302,116 @@ describe('test only for empty values', () => {
         position: emp1.position,
         department: emp1.department,
       });
-      await Employee.sync(); // Sync from DB.
+      await Employee.create({
+        name: emp1.name,
+        address: emp1.address,
+        email: emp1.email,
+        phone: emp1.phone,
+        position: emp1.position,
+        department: emp1.department,
+      });
+      const result = await Employee.findAndCountAll({
+        where: {
+          name: emp1.name,
+        }
+      })
+      expect(result.count).toBe(2);
+      expect(String(result.rows[0].id)).not.toEqual(String(result.rows[1].id));
+    } catch (error) {
+      // console.log(`eroor here ${error}`);
+      expect(error).toBeUndefined;
+    }
+  });
+})
+
+describe('Behaiour of table when it is updated.', () => {
+
+  test('test for name field when it is updated.', async () => {
+    await Employee.create({
+      name: emp1.name,
+      address: emp1.address,
+      email: emp1.email,
+      phone: emp1.phone,
+      position: emp1.position,
+      department: emp1.department,
+    });
+    let testEmp = await Employee.findOne( {where: { name: emp1.name } } ); // find the row with emp1.name.
+    expect(testEmp.name).not.toBe(emp2.name);  //Test that emp1.name is not equal to emp2.name before update.
+
+    // Update emp1.name to emp2.name.
+    await Employee.update( {name: emp2.name },
+      {
+        where: { name: emp1.name }
+      }
+    )
+    // Use the id obtained from DB query to access the same row.
+    testEmp = await Employee.findOne( {where: { id: testEmp.id } } );
+    expect(testEmp.name).toEqual(emp2.name); // expect name to be updated to emp2.name.
+  });
+
+  test('test for name field when it is updated with a null value', async () => {
+    try {
+      await Employee.create({
+        name: emp1.name,
+        address: emp1.address,
+        email: emp1.email,
+        phone: emp1.phone,
+        position: emp1.position,
+        department: emp1.department,
+      });
       let testEmp = await Employee.findOne( {where: { name: emp1.name } } ); // find the row with emp1.name.
       expect(testEmp.name).not.toBe(emp2.name);  //Test that emp1.name is not equal to emp2.name before update.
 
-      // Update emp1.name to emp2.name.
-      await Employee.update( {name: emp2.name },
+      // Update emp1.name to null.
+      await Employee.update( {name: null}, // FIX: Null constraint should not permit this place to updated to null.
+        // FIX: cont'd: Liekly will construct a custom validator to avoid. null.
+
         {
-          where: { name: emp1.name }
+          where: { name: testEmp.name },
+          // validate: true
         }
       )
-      await Employee.sync(); // Sync from db.
+      // Use the id obtained from previous DB query to access the same row.
+      testEmp = await Employee.findOne( {where: { id: testEmp.id } } );
+      expect(testEmp).toBeNull();
+    } catch(error) {
+      // console.log(`Nasty Error ${error}`);
+      expect(error.message).toBe("notNull Violation: Employee.name cannot be null");
+    }
+  });
+
+  test('test for name field when it is updated with empty string', async () => {
+    try {
+      await Employee.create({
+        name: emp1.name,
+        address: emp1.address,
+        email: emp1.email,
+        phone: emp1.phone,
+        position: emp1.position,
+        department: emp1.department,
+      });
+      let testEmp = await Employee.findOne( {where: { name: emp1.name } } ); // find the row with emp1.name.
+      expect(testEmp.name).toBe(emp1.name);  //Test that test name is emp1.name.
+
+      // Update emp1.name to empty value.
+      await Employee.update( {name: ''}, // NOTE: Interesting enough, this does not allow for empty value.
+
+        {
+          where: { name: testEmp.name },
+          // validate: true
+        }
+      )
       // Use the id obtained from DB query to access the same row.
       testEmp = await Employee.findOne( {where: { id: testEmp.id } } );
-      expect(testEmp.name).toEqual(emp2.name); // expect name to be updated to emp2.name.
-    });
-
-    test.failing('test for name field when it is updated with a null value', async () => {
-      try {
-        await Employee.sync();
-        await Employee.create({
-          name: emp1.name,
-          address: emp1.address,
-          email: emp1.email,
-          phone: emp1.phone,
-          position: emp1.position,
-          department: emp1.department,
-        });
-        await Employee.sync(); // Sync from DB.
-        let testEmp = await Employee.findOne( {where: { name: emp1.name } } ); // find the row with emp1.name.
-        expect(testEmp.name).not.toBe(emp2.name);  //Test that emp1.name is not equal to emp2.name before update.
-
-        // Update emp1.name to null.
-        await Employee.update( {name: null}, // FIX: Null constraint should not permit this place to updated to null.
-          // FIX: cont'd: Liekly will construct a custom validator to avoid. null.
-
-          {
-            where: { name: testEmp.name },
-            // validate: true
-          }
-        )
-        await Employee.sync(); // Sync from db.
-        // Use the id obtained from previous DB query to access the same row.
-        testEmp = await Employee.findOne( {where: { id: testEmp.id } } );
-        expect(testEmp).toBeNull();
-      } catch(error) {
-        // console.log(`Nasty Error ${error}`);
-        expect(error.message).toBe('Name cannot be null');
-      }
-    });
-
-    test('test for name field when it is updated with empty string', async () => {
-      try {
-        await Employee.sync();
-        await Employee.create({
-          name: emp1.name,
-          address: emp1.address,
-          email: emp1.email,
-          phone: emp1.phone,
-          position: emp1.position,
-          department: emp1.department,
-        });
-        await Employee.sync(); // Sync from DB.
-        let testEmp = await Employee.findOne( {where: { name: emp1.name } } ); // find the row with emp1.name.
-        expect(testEmp.name).toBe(emp1.name);  //Test that test name is emp1.name.
-
-        // Update emp1.name to empty value.
-        await Employee.update( {name: ''}, // NOTE: Interesting enough, this does not allow for null value.
-
-          {
-            where: { name: testEmp.name },
-            // validate: true
-          }
-        )
-        await Employee.sync(); // Sync from db.
-        // Use the id obtained from DB query to access the same row.
-        testEmp = await Employee.findOne( {where: { id: testEmp.id } } );
-        expect(testEmp).toBeNull();
-      } catch(error) {
-        // console.log(`Nasty Error ${error}`);
-        expect(error.message).toBe('Validation error: Regex pattern does not match, expecting `firstName secondName`');
-      }
-    });
-
-  })
+      expect(testEmp).toBeNull();
+    } catch(error) {
+      // console.log(`Nasty Error ${error}`);
+      expect(error.message).toBe('Validation error: Regex pattern does not match, expecting `firstName secondName`');
+    }
+  });
 })
+
+/*
+describe('Test cases when there is deletion', () => {
+
+})*/

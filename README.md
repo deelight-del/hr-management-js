@@ -12,6 +12,7 @@ Jest as the testing framework...
 1. Install postgresql
 2. npm install
 3. Set up databases (dev and test db) - Use the scripts in the config director.
+4. Run DB migration Script - `NODE_ENV=[test|production|development] npx sequelize-cli db:migrate`
 4. RUN SERVER - `DOTENV_CONFIG_PATH=/path/to/dotenv_file node -r dotenv/config app.js`
 5. TEST SERVER - `DOTENV_CONFIG_PATH=/path/to/doenv_file npm run test`
 

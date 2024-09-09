@@ -17,10 +17,7 @@ const Employee = sequelize.define('Employee', {
   },
   name: {
     type: DataTypes.STRING,
-    allowNull: {
-      args: false,
-      msg: 'Name cannot be null',
-    },
+    allowNull: false,
     validate: {
       is: {
         args: /^[a-zA-Z'-]+\s?[a-zA-Z'-]*$/i,
@@ -31,20 +28,14 @@ const Employee = sequelize.define('Employee', {
   },
   address: {
     type: DataTypes.STRING,
-    allowNull: {
-      args: false,
-      msg: 'Address cannot be null'
-    },
+    allowNull: false,
     notEmpty: {
       msg: 'Address cannot be empty'
     },
   },
   email: {
     type: DataTypes.STRING,
-    allowNull: {
-      args: false,
-      msg: 'Email cannot be null'
-      },
+    allowNull: false,
     validate: {
       isEmail: {
         msg: 'Invalid Email Address/Empty'
@@ -54,10 +45,7 @@ const Employee = sequelize.define('Employee', {
 },
   phone: {
     type: DataTypes.STRING(32),
-    allowNull: {
-      args: false,
-      msg: 'Phone number cannot be null'
-    },
+    allowNull: false,
     notEmpty: {
       msg: 'Phone number cannot be empty'
     }
@@ -65,10 +53,7 @@ const Employee = sequelize.define('Employee', {
   },
   position: {
     type: DataTypes.STRING,
-    allowNull: {
-      args: false,
-      msg: 'Position cannot be null'
-    },
+    allowNull: false,
     notEmpty: {
       msg: 'Position cannot be empty'
     }
@@ -77,10 +62,7 @@ const Employee = sequelize.define('Employee', {
   },
   department: {
     type: DataTypes.STRING,
-    allowNull: {
-      args: false,
-      msg: 'Department cannot be null'
-    },
+    allowNull: false,
     notEmpty: {
       msg: 'Department cannot be empty'
     },
@@ -91,6 +73,7 @@ const Employee = sequelize.define('Employee', {
 
 (async () => {
   await sequelize.sync();
+  // console.log('I was able to get here');
   //const jane = await Employee.create({
   //  name: 'jane',
   //  address: '123 doe street',
